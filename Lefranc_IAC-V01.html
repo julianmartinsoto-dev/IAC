@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ensayo de Permeabilidad Lefranc - IAC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --input-fill:#DBE5F1;
+    --input-fill-hover:#C6D9EE;
+    --border:#7f7f7f;
+    --border-light:#bfbfbf;
+    --text:#1a1a1a;
+    --accent:#1F4E79;
+    --accent-red:#C0272D;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:Calibri,'Segoe UI',Arial,sans-serif;
+    background:#e9e9e9;
+    color:var(--text);
+    padding:24px 12px;
+  }
+  .sheet{
+    max-width:760px;
+    margin:0 auto;
+    background:#ffffff;
+    border:1px solid var(--border);
+    padding:14px;
+  }
+
+  /* header */
+  .logo-box{
+    border:1px solid var(--border);
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+  }
+  .logo-box img{height:40px;display:block;}
+
+  .disclaimer{
+    border:1px solid var(--border);
+    border-top:none;
+    padding:6px 10px;
+    font-size:11px;
+    text-align:center;
+    line-height:1.35;
+    color:#333;
+  }
+
+  /* constants table */
+  .const-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:14px;
+    font-size:13px;
+  }
+  .const-table td{
+    border:1px solid var(--border);
+    padding:5px 8px;
+    height:30px;
+  }
+  .const-label{
+    text-align:center;
+    width:38%;
+    font-weight:400;
+  }
+  .const-table tr:nth-child(3) .const-label{font-weight:700;}
+  .const-input{
+    width:100%;
+    border:none;
+    background:var(--input-fill);
+    text-align:right;
+    font-weight:700;
+    font-size:13px;
+    font-family:inherit;
+    padding:4px 6px;
+    outline:none;
+  }
+  .const-input:focus{background:var(--input-fill-hover);}
+  td.const-input-cell{background:var(--input-fill); padding:0;}
+
+  /* data table */
+  .data-wrap{margin-top:16px; overflow-x:auto;}
+  table.data{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+  }
+  table.data th{
+    border:1px solid var(--border);
+    background:#f2f2f2;
+    padding:6px 4px;
+    text-align:center;
+    font-weight:600;
+  }
+  table.data td{
+    border:1px solid var(--border);
+    text-align:center;
+    padding:0;
+    height:26px;
+  }
+  table.data td.fixed{
+    background:#fafafa;
+    padding:4px;
+  }
+  table.data td.computed{
+    background:#fafafa;
+    padding:4px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.data td.editable{background:var(--input-fill);}
+  table.data input.descenso{
+    width:100%;
+    height:100%;
+    border:none;
+    background:transparent;
+    text-align:right;
+    font-weight:700;
+    font-family:inherit;
+    font-size:12.5px;
+    padding:4px 6px;
+    outline:none;
+  }
+  table.data input.descenso:focus{background:var(--input-fill-hover);}
+
+  /* summary */
+  .summary{
+    margin-top:18px;
+    display:flex;
+    justify-content:flex-end;
+  }
+  .summary-box{
+    border:1px solid var(--border);
+    background:#f2f2f2;
+    padding:10px 16px;
+    font-size:14px;
+    font-weight:700;
+    text-align:right;
+    min-width:280px;
+  }
+  .summary-box span.value{
+    color:var(--accent);
+    margin-left:8px;
+  }
+
+  /* chart */
+  .chart-section{margin-top:22px; border:1px solid var(--border); padding:12px;}
+  .chart-title{font-size:13px; font-weight:700; text-align:center; margin-bottom:8px; color:#333;}
+  .chart-container{position:relative; height:340px;}
+
+  .legend-note{font-size:10.5px; color:#666; text-align:center; margin-top:6px;}
+
+  .actions{margin-top:10px; text-align:right;}
+  .actions button{
+    font-family:inherit;
+    font-size:12px;
+    background:#fff;
+    border:1px solid var(--border);
+    padding:5px 10px;
+    cursor:pointer;
+  }
+  .actions button:hover{background:#f2f2f2;}
+
+  @media (max-width:600px){
+    .summary-box{min-width:0; width:100%;}
+    table.data{font-size:11px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="logo-box">
+    <img src="data:image/png;base64,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" alt="Inspección Aña Cuá">
+  </div>
+  <div class="disclaimer">
+    Uso exclusivo de la IAC de Pantalla para verificación de permeabilidades en campo.<br>
+    Prohibida su reproducción, uso no autorizado o divulgación a terceros.
+  </div>
+
+  <table class="const-table">
+    <tr>
+      <td class="const-label">De [cm]:</td>
+      <td class="const-input-cell"><input class="const-input" id="De" type="number" step="any" value="13"></td>
+    </tr>
+    <tr>
+      <td class="const-label">L [cm]:</td>
+      <td class="const-input-cell"><input class="const-input" id="L" type="number" step="any" value="2704"></td>
+    </tr>
+    <tr>
+      <td class="const-label" style="font-weight:700;">H1 [cm]:</td>
+      <td class="const-input-cell"><input class="const-input" id="H1" type="number" step="any" value="2854"></td>
+    </tr>
+  </table>
+
+  <div class="data-wrap">
+    <table class="data" id="dataTable">
+      <thead>
+        <tr>
+          <th>Tiempo<br>[min]</th>
+          <th>Tiempo<br>[seg]</th>
+          <th>Descenso<br>[cm]</th>
+          <th>K<br>[cm/seg]</th>
+        </tr>
+      </thead>
+      <tbody id="dataBody">
+        <tr data-min="0"><td class="fixed">0</td><td class="computed" data-seg>0</td><td class="editable"><input class="descenso" type="number" step="any" value="0"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="1"><td class="fixed">1</td><td class="computed" data-seg>60</td><td class="editable"><input class="descenso" type="number" step="any" value="40"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="2"><td class="fixed">2</td><td class="computed" data-seg>120</td><td class="editable"><input class="descenso" type="number" step="any" value="80"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="3"><td class="fixed">3</td><td class="computed" data-seg>180</td><td class="editable"><input class="descenso" type="number" step="any" value="110"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="4"><td class="fixed">4</td><td class="computed" data-seg>240</td><td class="editable"><input class="descenso" type="number" step="any" value="170"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="5"><td class="fixed">5</td><td class="computed" data-seg>300</td><td class="editable"><input class="descenso" type="number" step="any" value="202"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="6"><td class="fixed">6</td><td class="computed" data-seg>360</td><td class="editable"><input class="descenso" type="number" step="any" value="222"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="7"><td class="fixed">7</td><td class="computed" data-seg>420</td><td class="editable"><input class="descenso" type="number" step="any" value="247"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="8"><td class="fixed">8</td><td class="computed" data-seg>480</td><td class="editable"><input class="descenso" type="number" step="any" value="292"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="9"><td class="fixed">9</td><td class="computed" data-seg>540</td><td class="editable"><input class="descenso" type="number" step="any" value="334"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="10"><td class="fixed">10</td><td class="computed" data-seg>600</td><td class="editable"><input class="descenso" type="number" step="any" value="354"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="15"><td class="fixed">15</td><td class="computed" data-seg>900</td><td class="editable"><input class="descenso" type="number" step="any" value="451"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="20"><td class="fixed">20</td><td class="computed" data-seg>1200</td><td class="editable"><input class="descenso" type="number" step="any" value="540"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="25"><td class="fixed">25</td><td class="computed" data-seg>1500</td><td class="editable"><input class="descenso" type="number" step="any" value="623"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="30"><td class="fixed">30</td><td class="computed" data-seg>1800</td><td class="editable"><input class="descenso" type="number" step="any" value="700"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="35"><td class="fixed">35</td><td class="computed" data-seg>2100</td><td class="editable"><input class="descenso" type="number" step="any" value="785"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="40"><td class="fixed">40</td><td class="computed" data-seg>2400</td><td class="editable"><input class="descenso" type="number" step="any" value="860"></td><td class="computed" data-k>-</td></tr>
+        <tr data-min="45"><td class="fixed">45</td><td class="computed" data-seg>2700</td><td class="editable"><input class="descenso" type="number" step="any" value="903"></td><td class="computed" data-k>-</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="actions">
+    <button id="addRowBtn" type="button">+ Agregar fila</button>
+  </div>
+
+  <div class="summary">
+    <div class="summary-box">
+      K promedio [cm/seg]:<span class="value" id="avgK">-</span>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="chart-title">Permeabilidad (K) en función del Descenso</div>
+    <div class="chart-container">
+      <canvas id="kChart"></canvas>
+    </div>
+    <div class="legend-note">Abscisas: Descenso [cm] &nbsp;|&nbsp; Ordenadas: K [cm/seg]</div>
+  </div>
+
+</div>
+
+<script>
+const dataBody = document.getElementById('dataBody');
+const DeInput = document.getElementById('De');
+const LInput = document.getElementById('L');
+const H1Input = document.getElementById('H1');
+
+function getRowEls(){
+  return Array.from(dataBody.querySelectorAll('tr'));
+}
+
+function wireRows(){
+  getRowEls().forEach((tr) => {
+    const inp = tr.querySelector('input.descenso');
+    inp.addEventListener('input', updateComputed);
+  });
+}
+
+function computeK(De, L, H1, tSeg, descenso){
+  if (!tSeg || tSeg <= 0) return null;
+  if (descenso === '' || descenso === null || isNaN(descenso)) return null;
+  const denom = H1 - descenso;
+  if (denom <= 0) return null;
+  const k = ((Math.pow(De,2) * Math.log((2*L)/De)) / (8*L*tSeg)) * Math.log(H1/denom);
+  if (!isFinite(k)) return null;
+  return k;
+}
+
+function formatSci(k){
+  if (k === null) return '-';
+  return k.toExponential(2).replace('e', 'E');
+}
+
+let chart;
+
+function updateComputed(){
+  const De = parseFloat(DeInput.value);
+  const L = parseFloat(LInput.value);
+  const H1 = parseFloat(H1Input.value);
+
+  const kValues = [];
+  const chartPoints = [];
+
+  getRowEls().forEach((tr) => {
+    const tiempoMin = parseFloat(tr.getAttribute('data-min'));
+    const tSeg = tiempoMin * 60;
+    const segCell = tr.querySelector('[data-seg]');
+    if (segCell) segCell.textContent = tSeg;
+
+    const inp = tr.querySelector('input.descenso');
+    const descenso = inp.value === '' ? '' : parseFloat(inp.value);
+
+    const k = computeK(De, L, H1, tSeg, descenso);
+    const kCell = tr.querySelector('[data-k]');
+    if (kCell) kCell.textContent = formatSci(k);
+
+    if (k !== null){
+      kValues.push(k);
+      chartPoints.push({x: descenso, y: k});
+    }
+  });
+
+  const avgEl = document.getElementById('avgK');
+  if (kValues.length > 0){
+    const avg = kValues.reduce((a,b)=>a+b,0) / kValues.length;
+    avgEl.textContent = formatSci(avg) + ' cm/seg';
+  } else {
+    avgEl.textContent = '-';
+  }
+
+  chartPoints.sort((a,b) => a.x - b.x);
+  updateChart(chartPoints);
+}
+
+function updateChart(points){
+  if (typeof Chart === 'undefined') return; // Chart.js no cargó (sin conexión); la tabla sigue funcionando igual
+  const ctx = document.getElementById('kChart').getContext('2d');
+  if (chart){
+    chart.data.datasets[0].data = points;
+    chart.update();
+    return;
+  }
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'K [cm/seg]',
+        data: points,
+        borderColor: '#1F4E79',
+        backgroundColor: '#1F4E79',
+        pointBackgroundColor: '#C0272D',
+        pointBorderColor: '#C0272D',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.15,
+        fill: false,
+        showLine: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (item) => `Descenso: ${item.parsed.x} cm  |  K: ${item.parsed.y.toExponential(2)} cm/seg`
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: true, text: 'Descenso [cm]', font: { weight: 'bold' } },
+          grid: { color: '#e5e5e5' }
+        },
+        y: {
+          title: { display: true, text: 'K [cm/seg]', font: { weight: 'bold' } },
+          grid: { color: '#e5e5e5' },
+          ticks: {
+            callback: (v) => Number(v).toExponential(1)
+          }
+        }
+      }
+    }
+  });
+}
+
+document.getElementById('addRowBtn').addEventListener('click', () => {
+  const existing = getRowEls();
+  const lastMin = existing.length ? parseFloat(existing[existing.length-1].getAttribute('data-min')) : 0;
+  const newMin = lastMin + 5;
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-min', newMin);
+  tr.innerHTML = `<td class="fixed">${newMin}</td><td class="computed" data-seg></td><td class="editable"><input class="descenso" type="number" step="any" value=""></td><td class="computed" data-k>-</td>`;
+  dataBody.appendChild(tr);
+  tr.querySelector('input.descenso').addEventListener('input', updateComputed);
+  updateComputed();
+});
+
+[DeInput, LInput, H1Input].forEach(inp => inp.addEventListener('input', updateComputed));
+
+function init(){
+  wireRows();
+  updateComputed();
+}
+
+init();
+</script>
+
+</body>
+</html>
